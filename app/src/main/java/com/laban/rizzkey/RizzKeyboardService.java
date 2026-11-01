@@ -31,9 +31,9 @@ import java.util.List;
 public class RizzKeyboardService extends InputMethodService {
 
     private static final String[][] STAGE_LABELS = {
-            {"first", "First message"},
+            {"open", "First message"},
             {"keep", "Keep it going"},
-            {"quiet", "Went quiet"},
+            {"dead", "Went quiet"},
             {"meet", "Ask to meet"},
             {"compliment", "Compliment"},
             {"sorry", "Apologise"},
@@ -207,10 +207,12 @@ public class RizzKeyboardService extends InputMethodService {
             letterRows.addView(keyRow(ROW_1));
             letterRows.addView(keyRow(ROW_2));
             letterRows.addView(lastLetterRow());
+            letterRows.addView(actionRow());
         } else {
             letterRows.addView(keyRow(NUM_1));
             letterRows.addView(keyRow(NUM_2));
             letterRows.addView(lastNumberRow());
+            letterRows.addView(actionRow());
         }
     }
 
@@ -244,15 +246,48 @@ public class RizzKeyboardService extends InputMethodService {
         return row;
     }
 
+    private View actionRow() {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+
+        Button mode = key(numbers ? "abc" : "123", 1.2f);
+        mode.setOnClickListener(v -> {
+            numbers = !numbers;
+            buildKeys();
+        });
+        row.addView(mode);
+
+        row.addView(key(",", 0.8f));
+
+        Button space = key("space", 3.4f);
+        space.setTextSize(13);
+        row.addView(space);
+
+        row.addView(key(".", 0.8f));
+
+        Button enter = key("⏎", 1.2f);
+        enter.setOnClickListener(v -> sendEnter());
+        row.addView(enter);
+
+        return row;
+    }
+
+    private void sendEnter() {
+        android.view.inputmethod.InputConnection connection = getCurrentInputConnection();
+        if (connection == null) return;
+        int action = getCurrentInputEditorInfo() == null
+                ? android.view.inputmethod.EditorInfo.IME_ACTION_NONE
+                : getCurrentInputEditorInfo().imeOptions & android.view.inputmethod.EditorInfo.IME_MASK_ACTION;
+        boolean noAction = action == android.view.inputmethod.EditorInfo.IME_ACTION_NONE
+                || action == android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED;
+        if (noAction || !connection.sendDefaultEditorAction(true)) {
+            connection.commitText("\n", 1);
+        }
+    }
+
     private View lastNumberRow() {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        Button back = key("abc", 1.4f);
-        back.setOnClickListener(v -> {
-            numbers = false;
-            buildKeys();
-        });
-        row.addView(back);
         for (String symbol : NUM_3) {
             row.addView(key(symbol, 1f));
         }
@@ -283,7 +318,15 @@ public class RizzKeyboardService extends InputMethodService {
             getCurrentInputConnection().deleteSurroundingText(1, 0);
             return;
         }
-        if ("⇧".equals(label) || "⇩".equals(label)) {
+        if ("⇧".equals(label) || "⇩".equals(label) || "123".equals(label) || "abc".equals(label)) {
+            return;
+        }
+        if ("space".equals(label)) {
+            getCurrentInputConnection().commitText(" ", 1);
+            return;
+        }
+        if ("⏎".equals(label)) {
+            sendEnter();
             return;
         }
         String text = letterOrSymbol(label);
