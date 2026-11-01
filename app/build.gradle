@@ -10,13 +10,28 @@ android {
         applicationId "com.laban.rizzkey"
         minSdk 21
         targetSdk 34
-        versionCode 2
-        versionName "0.2"
+        versionCode 3
+        versionName "0.3"
+    }
+
+    /* One key for every build, kept in the repo, so a new version installs over
+       the old one. A throwaway debug key per build is why 0.2 refused to install. */
+    signingConfigs {
+        shared {
+            storeFile file("../signing/rizz-key.jks")
+            storePassword "rizzkey123"
+            keyAlias "rizzkey"
+            keyPassword "rizzkey123"
+        }
     }
 
     buildTypes {
+        debug {
+            signingConfig signingConfigs.shared
+        }
         release {
             minifyEnabled false
+            signingConfig signingConfigs.shared
         }
     }
 
