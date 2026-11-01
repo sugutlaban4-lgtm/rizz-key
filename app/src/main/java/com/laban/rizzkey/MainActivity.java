@@ -31,6 +31,7 @@ public class MainActivity extends Activity {
     private Button enable;
     private Button choose;
     private Button floatButton;
+    private EditText keyField;
     private boolean floatOn = false;
 
     @Override
@@ -104,6 +105,55 @@ public class MainActivity extends Activity {
 
         /* Some phones will not open the picker from a screen that has no text
            field, so give them one to tap into and try again there. */
+        /* ---- the AI key: without it, the pad only has the written lines ---- */
+        TextView keyTitle = new TextView(this);
+        keyTitle.setText("AI replies (optional)");
+        keyTitle.setTextSize(17);
+        keyTitle.setTextColor(Color.parseColor("#0f172a"));
+        keyTitle.setPadding(0, 26, 0, 6);
+        content.addView(keyTitle);
+
+        TextView keyHint = new TextView(this);
+        keyHint.setText("The Ask AI button needs a free Gemini key from Google AI Studio. "
+                + "Paste it here and it stays on this phone.");
+        keyHint.setTextSize(13);
+        keyHint.setTextColor(Color.parseColor("#475569"));
+        keyHint.setPadding(0, 0, 0, 8);
+        content.addView(keyHint);
+
+        keyField = new EditText(this);
+        keyField.setHint("Paste your key");
+        keyField.setText(AiClient.apiKey(this));
+        keyField.setTextSize(13);
+        keyField.setSingleLine(true);
+        keyField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        content.addView(keyField);
+
+        Button saveKey = new Button(this);
+        saveKey.setText("Save key");
+        saveKey.setOnClickListener(v -> {
+            AiClient.saveKey(this, keyField.getText().toString());
+            Toast.makeText(this, "Key saved", Toast.LENGTH_SHORT).show();
+        });
+        content.addView(saveKey);
+
+        Button testKey = new Button(this);
+        testKey.setText("Try one AI reply");
+        testKey.setOnClickListener(v -> {
+            testKey.setText("Asking...");
+            AiClient.ask(AiClient.apiKey(this),
+                    AiClient.buildPrompt("First message", "Sweet", "testing the key"),
+                    (answer, error) -> runOnUiThread(() -> {
+                        testKey.setText("Try one AI reply");
+                        if (error != null) {
+                            Toast.makeText(this, error, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(this, answer[0], Toast.LENGTH_LONG).show();
+                        }
+                    }));
+        });
+        content.addView(testKey);
+
         TextView hint = new TextView(this);
         hint.setText("If nothing happens, tap the box below, then hold the globe key "
                 + "on the keyboard. Your old keyboard comes back the same way.");

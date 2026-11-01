@@ -71,6 +71,7 @@ public class AssistantOverlayService extends Service {
     private TextView stageChip;
     private TextView toneChip;
     private TextView readChip;
+    private TextView askChip;
     private final TextView[] lines = new TextView[3];
 
     private JSONObject data;
@@ -244,9 +245,13 @@ public class AssistantOverlayService extends Service {
             refresh();
         });
 
+        askChip = miniChip("Ask AI");
+        askChip.setOnClickListener(v -> askAi());
+
         row.addView(stageChip);
         row.addView(toneChip);
         row.addView(readChip);
+        row.addView(askChip);
         return row;
     }
 
@@ -265,6 +270,33 @@ public class AssistantOverlayService extends Service {
         params.rightMargin = dp(6);
         chip.setLayoutParams(params);
         return chip;
+    }
+
+    /* The one button that behaves like Wrizz: it asks a model, using the copied
+       conversation as context, and drops the answers into the same three rows. */
+    private void askAi() {
+        if (askChip == null) return;
+        askChip.setText("Thinking...");
+        String prompt = AiClient.buildPrompt(
+                STAGES[stageIndex][1], TONES[toneIndex][1], readClipboard());
+        AiClient.ask(AiClient.apiKey(this), prompt, (answer, error) -> runOnUiThread(() -> {
+            if (askChip == null) return;
+            askChip.setText(error == null ? "Ask AI" : "Ask AI");
+            if (error != null) {
+                lines[0].setText(error);
+                lines[0].setVisibility(View.VISIBLE);
+                for (int i = 1; i < lines.length; i++) lines[i].setVisibility(View.GONE);
+                return;
+            }
+            for (int i = 0; i < lines.length; i++) {
+                if (i < answer.length) {
+                    lines[i].setText(answer[i]);
+                    lines[i].setVisibility(View.VISIBLE);
+                } else {
+                    lines[i].setVisibility(View.GONE);
+                }
+            }
+        }));
     }
 
     /* --------------------------------------------------------------- content */
