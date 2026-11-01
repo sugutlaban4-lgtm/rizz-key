@@ -12,7 +12,9 @@ import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -65,6 +67,7 @@ public class AssistantOverlayService extends Service {
             {"sheng", "Sheng"}
     };
 
+    private final Handler main = new Handler(Looper.getMainLooper());
     private WindowManager manager;
     private LinearLayout panel;
     private TextView bubble;
@@ -279,7 +282,7 @@ public class AssistantOverlayService extends Service {
         askChip.setText("Thinking...");
         String prompt = AiClient.buildPrompt(
                 STAGES[stageIndex][1], TONES[toneIndex][1], readClipboard());
-        AiClient.ask(AiClient.apiKey(this), prompt, (answer, error) -> runOnUiThread(() -> {
+        AiClient.ask(AiClient.apiKey(this), prompt, (answer, error) -> main.post(() -> {
             if (askChip == null) return;
             askChip.setText(error == null ? "Ask AI" : "Ask AI");
             if (error != null) {

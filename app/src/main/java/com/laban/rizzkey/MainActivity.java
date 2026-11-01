@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
         keyTitle.setTextSize(17);
         keyTitle.setTextColor(Color.parseColor("#0f172a"));
         keyTitle.setPadding(0, 26, 0, 6);
-        content.addView(keyTitle);
+        root.addView(keyTitle);
 
         TextView keyHint = new TextView(this);
         keyHint.setText("The Ask AI button needs a free Gemini key from Google AI Studio. "
@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
         keyHint.setTextSize(13);
         keyHint.setTextColor(Color.parseColor("#475569"));
         keyHint.setPadding(0, 0, 0, 8);
-        content.addView(keyHint);
+        root.addView(keyHint);
 
         keyField = new EditText(this);
         keyField.setHint("Paste your key");
@@ -127,7 +127,7 @@ public class MainActivity extends Activity {
         keyField.setTextSize(13);
         keyField.setSingleLine(true);
         keyField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-        content.addView(keyField);
+        root.addView(keyField);
 
         Button saveKey = new Button(this);
         saveKey.setText("Save key");
@@ -135,7 +135,7 @@ public class MainActivity extends Activity {
             AiClient.saveKey(this, keyField.getText().toString());
             Toast.makeText(this, "Key saved", Toast.LENGTH_SHORT).show();
         });
-        content.addView(saveKey);
+        root.addView(saveKey);
 
         Button testKey = new Button(this);
         testKey.setText("Try one AI reply");
@@ -152,7 +152,7 @@ public class MainActivity extends Activity {
                         }
                     }));
         });
-        content.addView(testKey);
+        root.addView(testKey);
 
         TextView hint = new TextView(this);
         hint.setText("If nothing happens, tap the box below, then hold the globe key "
