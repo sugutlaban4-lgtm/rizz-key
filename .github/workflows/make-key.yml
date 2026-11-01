@@ -1,0 +1,25 @@
+name: Make signing key once
+
+on:
+  push:
+    paths:
+      - ".github/workflows/make-key.yml"
+
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Create key and print it as base64
+        run: |
+          keytool -genkeypair -v -keystore rizz.jks -alias rizzkey \
+            -keyalg RSA -keysize 2048 -validity 10950 \
+            -storepass rizzkey123 -keypass rizzkey123 \
+            -dname "CN=Rizz Key, OU=Laban, O=Learn Smart Hub, L=Nairobi, C=KE"
+          echo "BEGIN_KEY"
+          base64 -w0 rizz.jks
+          echo ""
+          echo "END_KEY"
