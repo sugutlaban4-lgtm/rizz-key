@@ -1,0 +1,40 @@
+name: Build keyboard
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Assemble debug APK
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: |
+          mkdir -p out
+          cp app/build/outputs/apk/debug/app-debug.apk out/rizz-key-0.1.apk
+
+      - name: Publish as release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1-${{ github.run_number }}
+          name: Rizz key 0.1 build ${{ github.run_number }}
+          body: |
+            Suggestion keyboard for chat replies. Install the APK, then enable it in
+            Settings, System, Languages and input, On-screen keyboard, Manage keyboards.
+          files: out/rizz-key-0.1.apk
+          make_latest: true

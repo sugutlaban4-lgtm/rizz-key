@@ -1,0 +1,284 @@
+{
+ "stages": [
+  {
+   "id": "open",
+   "label": "First message"
+  },
+  {
+   "id": "keep",
+   "label": "Keeping it going"
+  },
+  {
+   "id": "dead",
+   "label": "Chat went quiet"
+  },
+  {
+   "id": "meet",
+   "label": "Ask to meet"
+  },
+  {
+   "id": "compliment",
+   "label": "Compliment"
+  },
+  {
+   "id": "sorry",
+   "label": "Apologise"
+  },
+  {
+   "id": "banter",
+   "label": "Banter"
+  }
+ ],
+ "tones": [
+  {
+   "id": "sweet",
+   "label": "Sweet"
+  },
+  {
+   "id": "funny",
+   "label": "Funny"
+  },
+  {
+   "id": "bold",
+   "label": "Bold"
+  },
+  {
+   "id": "sheng",
+   "label": "Sheng"
+  }
+ ],
+ "lines": {
+  "open": {
+   "sweet": [
+    "Hey, I have been meaning to say hi for a while. How is your week going?",
+    "You came to mind today, so I thought I would say hello properly.",
+    "Hi. No clever line, I just wanted to talk to you."
+   ],
+   "funny": [
+    "I had a whole opening line prepared, then I forgot it. So: hi.",
+    "Quick survey: are you the type who replies fast or the type who makes people wait?",
+    "Hi. My friends said not to send this. I do not always listen."
+   ],
+   "bold": [
+    "I saw your photo and stopped scrolling. What are you up to today?",
+    "You seem like the most interesting person on my phone right now. Prove me right.",
+    "I am not going to pretend this is random. I wanted to talk to you."
+   ],
+   "sheng": [
+    "Niaje, uko aje? Nimekuwa nikifikiria kukucheck.",
+    "Sasa. Uko free leo ama ni hustle tu?",
+    "Mambo. Nimeona nikuje nikuulize uko aje."
+   ]
+  },
+  "keep": {
+   "sweet": [
+    "Tell me the small things about your day, I actually want to hear them.",
+    "That sounds like it took a lot out of you. How are you holding up now?",
+    "I like how you explain things. Go on."
+   ],
+   "funny": [
+    "Wait, finish that story before I lose it laughing.",
+    "So what you are telling me is you survived all that and still made it sound funny.",
+    "I have decided you are the entertainment for the rest of my evening. Continue."
+   ],
+   "bold": [
+    "I want to hear the part you left out.",
+    "You are easy to talk to, which is a problem for my sleep.",
+    "Keep going, I am enjoying this more than I planned to."
+   ],
+   "sheng": [
+    "Wacha uongo, endelea kudrop hizo story.",
+    "Unaweza kuwa mtu wa kufurahisha aki. Endelea.",
+    "Kwani hiyo ndio ilikuwa yote? Nipee full story."
+   ]
+  },
+  "dead": {
+   "sweet": [
+    "Hey, no pressure at all. Just checking you are doing okay.",
+    "I realised we left the conversation in the middle. Where were we?",
+    "Sending a small hello in case your week has been heavy."
+   ],
+   "funny": [
+    "Breaking news: a WhatsApp chat has gone quiet. Experts are baffled.",
+    "I am reopening this case. Where did we stop?",
+    "You disappeared like a government promise. Anyway, hi."
+   ],
+   "bold": [
+    "You went quiet. I noticed, and I am here anyway.",
+    "Rounding back because I liked where we were going.",
+    "I do not do the waiting game well, so: what are you doing this week?"
+   ],
+   "sheng": [
+    "Ulienda wapi? Umepotea aki.",
+    "Niaje, bado uko? Nilidhani umenipotezea.",
+    "Sasa, tuliacha wapi? Rudia hapa."
+   ]
+  },
+  "meet": {
+   "sweet": [
+    "I would love to see you properly. Coffee this week, if you are free?",
+    "There is a place I think you would like. Should we go on Saturday?",
+    "I enjoy talking to you here. I would like to try talking to you in person."
+   ],
+   "funny": [
+    "My chat game is strong, but I am told I am better with a coffee in hand. Test me?",
+    "Proposal: one hour, one cafe, no phones on the table. If it is terrible, we both go home early.",
+    "You have earned a promotion from texting to real life. When are you free?"
+   ],
+   "bold": [
+    "I am asking you out. Saturday afternoon, I pick the place.",
+    "Let us stop pretending this is only texting. When are you free?",
+    "Free on Saturday? I have a place in mind and I am not taking no quietly."
+   ],
+   "sheng": [
+    "Tuchill kesho? Nakuchagulia place poa.",
+    "Uko free Saturday? Tuonane tustory kwa macho.",
+    "Wacha tuongee hapa tu, tukunywe chai Saturday."
+   ]
+  },
+  "compliment": {
+   "sweet": [
+    "You have a way of making an ordinary conversation feel like the best part of my day.",
+    "I noticed you listen properly. That is rare.",
+    "The way you carry yourself is quietly impressive."
+   ],
+   "funny": [
+    "You are dangerously easy to like. This is a formal complaint.",
+    "I was going to be cool about this, but you are genuinely funny. Congratulations.",
+    "You have ruined normal conversation for me. Nobody else keeps up."
+   ],
+   "bold": [
+    "You are the best thing to happen to my notifications.",
+    "I like your mind, and I am not going to be shy about it.",
+    "You look good, but it is the way you think that keeps me here."
+   ],
+   "sheng": [
+    "Wewe ni poa aki, hata siwezi kuficha.",
+    "Uko na style ya kipekee, na inafurahisha.",
+    "Si ati naongea tu, wewe ni wa maana aki."
+   ]
+  },
+  "sorry": {
+   "sweet": [
+    "I got that wrong and I am sorry. I would rather fix it than be right.",
+    "That came out badly. I did not mean it the way it landed.",
+    "I have thought about what you said, and you had a point."
+   ],
+   "funny": [
+    "I have reviewed the footage and I was clearly at fault. Apologies.",
+    "That was not my finest moment, and I am officially withdrawing it.",
+    "I am prepared to admit I was wrong. Please note the date, this is rare."
+   ],
+   "bold": [
+    "I was wrong. I am not going to dress it up.",
+    "I overstepped. Tell me what would make it right.",
+    "No excuses from me. I am sorry, and I will do better."
+   ],
+   "sheng": [
+    "Nimekosea, na ninaomba msamaha aki.",
+    "Sikupaswa kusema hivyo, samahani.",
+    "Nilikosea, na nimekuja kusema pole."
+   ]
+  },
+  "banter": {
+   "sweet": [
+    "You are trouble, and I am choosing not to notice.",
+    "Careful, I might actually enjoy arguing with you.",
+    "Fine, you win this one. Do not get used to it."
+   ],
+   "funny": [
+    "I am screenshotting this for the day you deny it.",
+    "You talk a lot for someone with that profile picture.",
+    "Your confidence is inspiring, considering the evidence."
+   ],
+   "bold": [
+    "Say that again, but this time to my face.",
+    "You are all talk until Saturday.",
+    "I let you win because I like you. Do not tell anyone."
+   ],
+   "sheng": [
+    "Wewe ni mkorogoto aki, lakini naelewa.",
+    "Acha kujifanya, wewe si poa hivo.",
+    "Utaongea sana lakini mwisho utakubali."
+   ]
+  }
+ },
+ "keyword": {
+  "sweet": [
+   "Tell me more about {word}, I like how you talk about it.",
+   "You mentioned {word} earlier and it stayed with me. How did that go?"
+  ],
+  "funny": [
+   "{word}? That is the most you thing you have said all day.",
+   "I read {word} and immediately had three follow up questions.",
+   "Explaining {word} to me like I am your student, go ahead."
+  ],
+  "bold": [
+   "You mentioned {word}. I want the whole story, not the summary.",
+   "Keep going about {word}. I am listening properly.",
+   "About {word}. Tell me the version you do not tell everyone."
+  ],
+  "sheng": [
+   "Hiyo {word} ndio gani sasa? Nieleze.",
+   "{word} imenishika aki. Endelea.",
+   "Wacha kudrop {word} halafu unyamaze."
+  ]
+ },
+ "stop": [
+  "the",
+  "and",
+  "but",
+  "for",
+  "you",
+  "your",
+  "with",
+  "that",
+  "this",
+  "have",
+  "just",
+  "like",
+  "what",
+  "when",
+  "will",
+  "was",
+  "were",
+  "are",
+  "not",
+  "from",
+  "they",
+  "them",
+  "then",
+  "than",
+  "been",
+  "about",
+  "there",
+  "here",
+  "very",
+  "really",
+  "some",
+  "would",
+  "could",
+  "should",
+  "still",
+  "also",
+  "because",
+  "though",
+  "while",
+  "which",
+  "while",
+  "into",
+  "over",
+  "after",
+  "before",
+  "ni",
+  "na",
+  "ya",
+  "wa",
+  "kwa",
+  "hii",
+  "hiyo",
+  "sasa",
+  "aki",
+  "ndio"
+ ]
+}
