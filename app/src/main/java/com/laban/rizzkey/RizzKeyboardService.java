@@ -1,6 +1,9 @@
 package com.laban.rizzkey;
 
 import android.inputmethodservice.InputMethodService;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -19,7 +22,9 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A small keyboard that carries its own suggestion engine.
@@ -55,6 +60,8 @@ public class RizzKeyboardService extends InputMethodService {
 
     private LinearLayout root;
     private LinearLayout letterRows;
+    private TextView readButton;
+    private String chatWord = null;
     private TextView stageButton;
     private TextView toneButton;
     private final TextView[] suggestionViews = new TextView[3];
@@ -104,9 +111,20 @@ public class RizzKeyboardService extends InputMethodService {
 
     private String[] currentLines() {
         List<String> lines = new ArrayList<>();
+        String tone = TONE_LABELS[toneIndex][0];
         try {
+            /* When the chat has been read, the first lines quote its own subject
+               back, so a reply lands inside the conversation instead of beside it. */
+            if (chatWord != null) {
+                JSONArray templates = data.optJSONObject("keyword").optJSONArray(tone);
+                if (templates != null) {
+                    for (int i = 0; i < templates.length(); i++) {
+                        lines.add(templates.getString(i).replace("{word}", chatWord));
+                    }
+                }
+            }
+
             String stage = STAGE_LABELS[stageIndex][0];
-            String tone = TONE_LABELS[toneIndex][0];
             JSONObject stageBlock = data.optJSONObject("lines").optJSONObject(stage);
             JSONArray set = stageBlock == null ? null : stageBlock.optJSONArray(tone);
             if (set != null) {
@@ -117,6 +135,71 @@ public class RizzKeyboardService extends InputMethodService {
         } catch (Exception ignored) {
         }
         return lines.toArray(new String[0]);
+    }
+
+    /* ------------------------------------------------------- reading a chat */
+
+    /**
+     * A keyboard cannot see the messages above it in another app; Android does
+     * not give it that. It can see two things: the text in the box being typed
+     * in, and the clipboard. So this reads whichever of those has something.
+     */
+    private String readChat() {
+        String text = "";
+
+        try {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            if (clipboard != null && clipboard.hasPrimaryClip()) {
+                ClipData clip = clipboard.getPrimaryClip();
+                if (clip != null && clip.getItemCount() > 0) {
+                    CharSequence copied = clip.getItemAt(0).coerceToText(this);
+                    if (copied != null) text = copied.toString();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        if (text.trim().length() < 8 && getCurrentInputConnection() != null) {
+            CharSequence around = getCurrentInputConnection().getTextBeforeCursor(400, 0);
+            if (around != null && around.length() > text.length()) {
+                text = around.toString();
+            }
+        }
+
+        return text;
+    }
+
+    private String keywordFrom(String text) {
+        if (text == null) return null;
+
+        Set<String> stop = new HashSet<>();
+        try {
+            JSONArray list = data.optJSONArray("stop");
+            if (list != null) {
+                for (int i = 0; i < list.length(); i++) {
+                    stop.add(list.getString(i));
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        String[] words = text.toLowerCase().split("[^a-z']+");
+        String best = "";
+        for (String word : words) {
+            if (word.length() < 4) continue;
+            if (stop.contains(word)) continue;
+            if (dullEnding(word)) continue;
+            if (word.length() > best.length()) best = word;
+        }
+        return best.isEmpty() ? null : best;
+    }
+
+    private boolean dullEnding(String word) {
+        String[] endings = {"ly", "able", "ible", "ful", "ous", "ive", "est", "ed"};
+        for (String ending : endings) {
+            if (word.endsWith(ending)) return true;
+        }
+        return false;
     }
 
     /* --------------------------------------------------------------- views */
@@ -140,11 +223,30 @@ public class RizzKeyboardService extends InputMethodService {
             refreshSuggestions();
         });
 
+        readButton = chip("Read chat");
+        readButton.setOnClickListener(v -> {
+            if (chatWord != null) {
+                chatWord = null;
+                readButton.setText("Read chat");
+                refreshSuggestions();
+                return;
+            }
+            String word = keywordFrom(readChat());
+            chatWord = word;
+            readButton.setText(word == null ? "Copy the chat first" : "chat: " + word);
+            refreshSuggestions();
+        });
+
         bar.addView(stageButton);
         LinearLayout.LayoutParams toneParams = new LinearLayout.LayoutParams(
                 0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         toneParams.setMarginStart(dp(6));
         bar.addView(toneButton, toneParams);
+
+        LinearLayout.LayoutParams readParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        readParams.setMarginStart(dp(6));
+        bar.addView(readButton, readParams);
         return bar;
     }
 
