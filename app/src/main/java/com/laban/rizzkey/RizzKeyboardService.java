@@ -280,7 +280,8 @@ public class RizzKeyboardService extends InputMethodService {
                 : getCurrentInputEditorInfo().imeOptions & android.view.inputmethod.EditorInfo.IME_MASK_ACTION;
         boolean noAction = action == android.view.inputmethod.EditorInfo.IME_ACTION_NONE
                 || action == android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED;
-        if (noAction || !connection.sendDefaultEditorAction(true)) {
+        boolean sent = !noAction && sendDefaultEditorAction(true);
+        if (!sent) {
             connection.commitText("\n", 1);
         }
     }
