@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * A screen you can actually find. Without this the app has no icon at all,
@@ -29,6 +30,8 @@ public class MainActivity extends Activity {
     private TextView status;
     private Button enable;
     private Button choose;
+    private Button floatButton;
+    private boolean floatOn = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +83,25 @@ public class MainActivity extends Activity {
         });
         root.addView(choose, matchWrapWithTop(dp(8)));
 
+        TextView floatTitle = new TextView(this);
+        floatTitle.setText("Floating button");
+        floatTitle.setTextSize(18);
+        floatTitle.setTextColor(Color.rgb(15, 23, 42));
+        root.addView(floatTitle, matchWrapWithTop(dp(20)));
+
+        TextView floatCopy = new TextView(this);
+        floatCopy.setText("A small W sits on the screen beside the keyboard. Tap it to ask "
+                + "what to say, tap a line to copy it. Drag it, or press and hold it to "
+                + "close it. This needs permission to display over other apps.");
+        floatCopy.setTextSize(14);
+        floatCopy.setTextColor(Color.rgb(100, 116, 139));
+        root.addView(floatCopy, matchWrapWithTop(dp(4)));
+
+        floatButton = new Button(this);
+        floatButton.setText("Show the floating W");
+        floatButton.setOnClickListener(v -> toggleFloat());
+        root.addView(floatButton, matchWrapWithTop(dp(6)));
+
         /* Some phones will not open the picker from a screen that has no text
            field, so give them one to tap into and try again there. */
         TextView hint = new TextView(this);
@@ -111,6 +133,49 @@ public class MainActivity extends Activity {
         status.setTextColor(on ? Color.rgb(13, 148, 136) : Color.rgb(180, 83, 9));
         enable.setEnabled(!on);
         choose.setEnabled(on);
+        floatOn = canDrawOverlays();
+        if (floatButton != null) {
+            floatButton.setText(floatOn ? "Hide the floating W" : "Show the floating W");
+        }
+    }
+
+    private void toggleFloat() {
+        if (!canDrawOverlays()) {
+            Toast.makeText(this, "Allow display over other apps, then come back", Toast.LENGTH_LONG).show();
+            try {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        android.net.Uri.parse("package:" + getPackageName()));
+                startActivity(intent);
+            } catch (Exception error) {
+                openLanguageSettings();
+            }
+            return;
+        }
+
+        Intent service = new Intent(this, AssistantOverlayService.class);
+        if (floatOn) {
+            stopService(service);
+            floatOn = false;
+            floatButton.setText("Show the floating W");
+            return;
+        }
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(service);
+            } else {
+                startService(service);
+            }
+            floatOn = true;
+            floatButton.setText("Hide the floating W");
+        } catch (Exception error) {
+            Toast.makeText(this, "The phone refused: " + error.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private boolean canDrawOverlays() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) return true;
+        return Settings.canDrawOverlays(this);
     }
 
     private boolean isEnabled() {
