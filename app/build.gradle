@@ -10,8 +10,8 @@ android {
         applicationId "com.laban.rizzkey"
         minSdk 21
         targetSdk 34
-        versionCode 8
-        versionName "0.8"
+        versionCode 9
+        versionName "0.9"
     }
 
     /* One key for every build, kept in the repo, so a new version installs over

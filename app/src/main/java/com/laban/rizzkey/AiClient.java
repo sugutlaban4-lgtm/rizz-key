@@ -20,8 +20,17 @@ import java.nio.charset.StandardCharsets;
  */
 final class AiClient {
 
-    private static final String ENDPOINT =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    /* Model names move. Google has already retired 2.5 flash for new keys and
+       told callers to use a newer one, so try the current alias first and fall
+       back rather than pinning a name that may be gone next month. */
+    private static final String[] MODELS = {
+            "gemini-flash-latest",
+            "gemini-3.8-flash",
+            "gemini-2.5-flash"
+    };
+
+    private static final String BASE =
+            "https://generativelanguage.googleapis.com/v1beta/models/";
 
     interface Callback {
         void done(String[] lines, String error);
@@ -61,61 +70,86 @@ final class AiClient {
             return;
         }
         new Thread(() -> {
-            HttpURLConnection connection = null;
-            try {
-                JSONObject part = new JSONObject().put("text", prompt);
-                JSONArray parts = new JSONArray().put(part);
-                JSONObject content = new JSONObject().put("parts", parts);
-                JSONArray contents = new JSONArray().put(content);
-                JSONObject body = new JSONObject().put("contents", contents);
-
-                URL url = new URL(ENDPOINT + key.trim());
-                connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
-                connection.setConnectTimeout(15000);
-                connection.setReadTimeout(30000);
-                connection.setDoOutput(true);
-
-                try (OutputStream out = connection.getOutputStream()) {
-                    out.write(body.toString().getBytes(StandardCharsets.UTF_8));
-                }
-
-                int code = connection.getResponseCode();
-                InputStream stream = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
-                String raw = readAll(stream);
-
-                if (code >= 400) {
-                    callback.done(null, explain(code, raw));
+            String lastError = null;
+            for (String model : MODELS) {
+                Result result = call(model, key.trim(), prompt);
+                if (result.lines != null) {
+                    callback.done(result.lines, null);
                     return;
                 }
-
-                JSONObject reply = new JSONObject(raw);
-                JSONArray candidates = reply.optJSONArray("candidates");
-                if (candidates == null || candidates.length() == 0) {
-                    callback.done(null, "The model sent nothing back");
-                    return;
-                }
-                JSONObject first = candidates.getJSONObject(0);
-                String text = first.getJSONObject("content").getJSONArray("parts")
-                        .getJSONObject(0).getString("text");
-
-                String[] lines = clean(text);
-                if (lines.length == 0) {
-                    callback.done(null, "The model sent nothing usable");
-                } else {
-                    callback.done(lines, null);
-                }
-            } catch (Exception error) {
-                callback.done(null, "No connection, or the key is wrong");
-            } finally {
-                if (connection != null) connection.disconnect();
+                lastError = result.error;
+                /* A retired model or a busy one is worth retrying elsewhere. A
+                   bad key is not, so stop the moment the key is the problem. */
+                if (result.fatal) break;
             }
+            callback.done(null, lastError == null ? "The model did not answer" : lastError);
         }).start();
     }
 
+    private static class Result {
+        String[] lines;
+        String error;
+        boolean fatal;
+    }
+
+    private static Result call(String model, String key, String prompt) {
+        Result result = new Result();
+        HttpURLConnection connection = null;
+        try {
+            JSONObject part = new JSONObject().put("text", prompt);
+            JSONObject content = new JSONObject().put("parts", new JSONArray().put(part));
+            JSONObject body = new JSONObject().put("contents", new JSONArray().put(content));
+
+            URL url = new URL(BASE + model + ":generateContent");
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            connection.setRequestProperty("X-goog-api-key", key);
+            connection.setConnectTimeout(20000);
+            connection.setReadTimeout(60000);
+            connection.setDoOutput(true);
+
+            try (OutputStream out = connection.getOutputStream()) {
+                out.write(body.toString().getBytes(StandardCharsets.UTF_8));
+            }
+
+            int code = connection.getResponseCode();
+            InputStream stream = code >= 400 ? connection.getErrorStream() : connection.getInputStream();
+            String raw = readAll(stream);
+
+            if (code >= 400) {
+                result.error = explain(code, raw);
+                result.fatal = (code == 400 || code == 401 || code == 403);
+                return result;
+            }
+
+            JSONObject reply = new JSONObject(raw);
+            JSONArray candidates = reply.optJSONArray("candidates");
+            if (candidates == null || candidates.length() == 0) {
+                result.error = "The model sent nothing back";
+                return result;
+            }
+            String text = candidates.getJSONObject(0).getJSONObject("content")
+                    .getJSONArray("parts").getJSONObject(0).getString("text");
+
+            String[] lines = clean(text);
+            if (lines.length == 0) {
+                result.error = "The model sent nothing usable";
+                return result;
+            }
+            result.lines = lines;
+            return result;
+        } catch (Exception error) {
+            result.error = "No connection, or the key is wrong";
+            return result;
+        } finally {
+            if (connection != null) connection.disconnect();
+        }
+    }
+
     private static String explain(int code, String raw) {
-        if (code == 400 || code == 403) return "That key is not accepted. Check it in the Rizz key app";
+        if (code == 400 || code == 401 || code == 403) return "That key is not accepted. Check it in the Rizz key app";
+        if (code == 404) return "Google retired that model. Update the app";
         if (code == 429) return "Too many asks just now. Wait a minute";
         if (raw != null && raw.contains("API key not valid")) return "That key is not accepted";
         return "The model answered with an error (" + code + ")";
